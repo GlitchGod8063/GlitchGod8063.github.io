@@ -1,0 +1,980 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GameLab | Download Games</title>
+    <script src="https://unpkg.com/lucide@latest"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@700;900&family=Rajdhani:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --primary-blue: #00d4ff;
+            --accent-blue: #007bff;
+            --dark-bg: #0b0e14;
+            --card-bg: #161b22;
+            --text-gray: #8b949e;
+            --rating-gold: #ffcc00;
+            --gd-yellow: #FFD600;
+            --gd-orange: #FF6B00;
+            --sub-teal: #00CED1;
+            --sub-dark: #003040;
+            --danger: #ff3a3a;
+            --success: #22c55e;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            background-color: var(--dark-bg);
+            color: white;
+            font-family: 'Rajdhani', system-ui, sans-serif;
+            margin: 0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            overflow-x: hidden;
+        }
+
+        body::before {
+            content: '';
+            position: fixed;
+            inset: 0;
+            background-image:
+                radial-gradient(1px 1px at 20% 30%, rgba(255,255,255,0.3) 0%, transparent 100%),
+                radial-gradient(1px 1px at 80% 10%, rgba(255,255,255,0.2) 0%, transparent 100%),
+                radial-gradient(1px 1px at 50% 70%, rgba(255,255,255,0.15) 0%, transparent 100%),
+                radial-gradient(1px 1px at 10% 90%, rgba(255,255,255,0.2) 0%, transparent 100%),
+                radial-gradient(1px 1px at 90% 60%, rgba(255,255,255,0.1) 0%, transparent 100%);
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        header {
+            padding: 3rem 0 1.5rem;
+            text-align: center;
+            position: relative;
+            z-index: 1;
+        }
+        header h1 {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.2rem;
+            letter-spacing: 4px;
+            margin: 0;
+            font-weight: 900;
+            text-shadow: 0 0 30px rgba(0,212,255,0.4);
+        }
+        header span { color: var(--primary-blue); }
+        header p {
+            color: var(--text-gray);
+            font-size: 0.95rem;
+            margin: 8px 0 0;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+        }
+
+        .container {
+            padding: 20px;
+            display: flex;
+            gap: 25px;
+            flex-wrap: wrap;
+            justify-content: center;
+            position: relative;
+            z-index: 1;
+        }
+
+        .game-card {
+            width: 320px;
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+            border: 1px solid #30363d;
+            background: var(--card-bg);
+        }
+        .game-card:hover { transform: translateY(-10px) scale(1.01); }
+        .game-card.gd-card:hover { border-color: var(--gd-yellow); box-shadow: 0 20px 50px rgba(255,214,0,0.2); }
+        .game-card.sub-card:hover { border-color: var(--sub-teal); box-shadow: 0 20px 50px rgba(0,206,209,0.2); }
+
+        .gd-banner {
+            width: 100%; height: 190px;
+            background: linear-gradient(135deg, #1a0a00 0%, #7a2e00 40%, #FF6B00 70%, #FFD600 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .gd-banner .gd-orbit {
+            position: absolute;
+            top: 44%; left: 50%;
+        }
+        .gd-banner::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: repeating-linear-gradient(45deg, rgba(255,255,255,0.03) 0px, rgba(255,255,255,0.03) 2px, transparent 2px, transparent 12px);
+        }
+        .gd-logo-wrap {
+            position: relative; z-index: 1;
+            width: 110px; height: 130px;
+            display: flex; flex-direction: column;
+            align-items: center; justify-content: flex-end;
+        }
+
+        .gd-logo {
+            width: 110px; height: 110px;
+            position: relative; z-index: 2;
+            animation: gdBounce 0.72s cubic-bezier(0.33,0,0.66,1) infinite alternate;
+            transform-origin: center bottom;
+        }
+        @keyframes gdBounce {
+            0%   { transform: translateY(0)    scaleX(1)    scaleY(1);    filter: drop-shadow(0 0 14px rgba(255,214,0,0.6)); }
+            70%  { transform: translateY(-28px) scaleX(0.95) scaleY(1.08); filter: drop-shadow(0 6px 22px rgba(255,140,0,0.9)); }
+            100% { transform: translateY(-32px) scaleX(0.93) scaleY(1.1);  filter: drop-shadow(0 8px 28px rgba(255,214,0,1)); }
+        }
+
+        .gd-shadow {
+            width: 70px; height: 10px;
+            background: rgba(0,0,0,0.45);
+            border-radius: 50%;
+            margin-top: -4px;
+            animation: gdShadow 0.72s cubic-bezier(0.33,0,0.66,1) infinite alternate;
+        }
+        @keyframes gdShadow {
+            0%   { transform: scaleX(1);   opacity: 0.45; }
+            100% { transform: scaleX(0.5); opacity: 0.15; }
+        }
+
+        .gd-orbit {
+            position: absolute;
+            top: 50%; left: 50%;
+            width: 0; height: 0;
+            animation: gdOrbit linear infinite;
+        }
+        .gd-orbit-1 { animation-duration: 2.4s;  animation-delay: 0s; }
+        .gd-orbit-2 { animation-duration: 2.4s;  animation-delay: -0.8s; }
+        .gd-orbit-3 { animation-duration: 2.4s;  animation-delay: -1.6s; }
+        @keyframes gdOrbit {
+            from { transform: rotate(0deg)   translateX(62px) rotate(0deg); }
+            to   { transform: rotate(360deg) translateX(62px) rotate(-360deg); }
+        }
+        .gd-spark {
+            width: 7px; height: 7px;
+            border-radius: 50%;
+            margin-left: -3.5px; margin-top: -3.5px;
+            animation: gdSparkPulse 1.2s ease-in-out infinite alternate;
+        }
+        .gd-spark-a { background: #FFD600; animation-delay: 0s; }
+        .gd-spark-b { background: #FF6B00; animation-delay: -0.4s; }
+        .gd-spark-c { background: #fff;    animation-delay: -0.8s; }
+        @keyframes gdSparkPulse {
+            from { transform: scale(0.6); opacity: 0.5; }
+            to   { transform: scale(1.3); opacity: 1; }
+        }
+
+        @keyframes gdBlink {
+            0%, 92%, 100% { transform: scaleY(1); }
+            95%            { transform: scaleY(0.08); }
+        }
+        .gd-eye-white {
+            transform-box: fill-box;
+            transform-origin: center;
+            animation: gdBlink 3.5s ease-in-out infinite;
+        }
+        .gd-eye-white-r { animation-delay: 0.04s; }
+
+        @keyframes gdBodyShift {
+            0%   { fill: #FF6B00; }
+            33%  { fill: #e05500; }
+            66%  { fill: #FF8C00; }
+            100% { fill: #FF6B00; }
+        }
+        .gd-body { animation: gdBodyShift 4s ease-in-out infinite; }
+
+        .sub-banner {
+            width: 100%; height: 190px;
+            background: linear-gradient(160deg, #001520 0%, #003040 35%, #005060 65%, #00a8b5 100%);
+            display: flex; align-items: center; justify-content: center;
+            position: relative; overflow: hidden;
+        }
+        .sub-banner::before {
+            content: '';
+            position: absolute; inset: 0;
+            background: radial-gradient(ellipse at 70% 80%, rgba(0,200,220,0.15) 0%, transparent 60%),
+                        radial-gradient(ellipse at 30% 20%, rgba(0,80,130,0.3) 0%, transparent 50%);
+        }
+        .bubble {
+            position: absolute; border-radius: 50%;
+            background: rgba(0,206,209,0.15);
+            border: 1px solid rgba(0,206,209,0.3);
+            animation: float-up linear infinite;
+        }
+        @keyframes float-up {
+            from { transform: translateY(0) scale(1); opacity: 0.7; }
+            to { transform: translateY(-220px) scale(0.3); opacity: 0; }
+        }
+        .sub-logo { position: relative; z-index: 1; filter: drop-shadow(0 0 20px rgba(0,206,209,0.8)); }
+
+        .card-content { padding: 18px 20px; text-align: center; }
+        .card-content h3 { margin: 5px 0; font-family: 'Orbitron', sans-serif; font-size: 1rem; letter-spacing: 1px; }
+        .card-content p { color: var(--text-gray); font-size: 0.88rem; margin: 4px 0 12px; }
+        .rating { font-size: 0.88rem; margin-bottom: 6px; display: block; }
+        .gd-rating { color: var(--gd-yellow); }
+        .sub-rating { color: var(--sub-teal); }
+
+        .view-btn {
+            background: transparent; cursor: pointer;
+            padding: 8px 18px; border-radius: 8px;
+            font-family: 'Rajdhani', sans-serif; font-weight: 600;
+            font-size: 0.9rem; letter-spacing: 1px; transition: all 0.2s;
+        }
+        .gd-card .view-btn { border: 1px solid var(--gd-yellow); color: var(--gd-yellow); }
+        .gd-card .view-btn:hover { background: var(--gd-yellow); color: #000; }
+        .sub-card .view-btn { border: 1px solid var(--sub-teal); color: var(--sub-teal); }
+        .sub-card .view-btn:hover { background: var(--sub-teal); color: #000; }
+
+        /* ---- MODAL ---- */
+        .modal {
+            display: none; position: fixed; z-index: 100;
+            left: 0; top: 0; width: 100%; height: 100%;
+            background-color: rgba(0,0,0,0.88);
+            backdrop-filter: blur(14px);
+        }
+        .modal-content {
+            background-color: #1c2128;
+            margin: 5% auto; padding: 30px;
+            width: 93%; max-width: 460px;
+            border-radius: 24px;
+            position: relative;
+            animation: slideUp 0.3s cubic-bezier(0.23,1,0.32,1);
+            max-height: 88vh; overflow-y: auto;
+        }
+        .modal-content.gd-modal { border: 1px solid rgba(255,214,0,0.3); }
+        .modal-content.sub-modal { border: 1px solid rgba(0,206,209,0.3); }
+        @keyframes slideUp {
+            from { transform: translateY(40px); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+        .close { position: absolute; right: 22px; top: 18px; font-size: 26px; cursor: pointer; color: var(--text-gray); transition: color 0.2s; line-height: 1; }
+        .close:hover { color: white; }
+
+        .popup-header { display: flex; align-items: center; gap: 15px; margin-bottom: 22px; }
+        .mini-icon { width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center; flex-shrink: 0; }
+        .mini-icon.gd { background: linear-gradient(135deg, var(--gd-orange), var(--gd-yellow)); }
+        .mini-icon.sub { background: linear-gradient(135deg, #003a50, var(--sub-teal)); }
+        .popup-header h2 { margin: 0 0 2px; font-family: 'Orbitron', sans-serif; font-size: 1.2rem; }
+        .popup-header span { font-size: 0.82rem; color: var(--text-gray); }
+
+        .tabs { display: flex; gap: 5px; margin-bottom: 20px; border-bottom: 1px solid #2a2f38; }
+        .tab-link {
+            background: none; border: none; color: var(--text-gray);
+            padding: 9px 12px; cursor: pointer;
+            font-family: 'Rajdhani', sans-serif; font-weight: 600; font-size: 0.9rem;
+            letter-spacing: 0.5px; border-bottom: 2px solid transparent; margin-bottom: -1px; transition: color 0.2s;
+        }
+        .gd-modal .tab-link.active { color: var(--gd-yellow); border-bottom-color: var(--gd-yellow); }
+        .sub-modal .tab-link.active { color: var(--sub-teal); border-bottom-color: var(--sub-teal); }
+        .tab-content { display: none; padding: 4px 0; }
+
+        .stats-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; font-size: 0.9rem; }
+        .stats-grid span { color: var(--text-gray); display: block; font-size: 0.78rem; text-transform: uppercase; letter-spacing: 0.5px; margin-bottom: 2px; }
+
+        .mod-container {
+            background: rgba(255,255,255,0.03); padding: 14px 16px; border-radius: 14px;
+            display: flex; justify-content: space-between; align-items: center;
+            border: 1px solid #30363d; margin-bottom: 10px; transition: border-color 0.2s;
+        }
+        .mod-container:hover { border-color: #555; }
+        .mod-title { font-weight: 600; margin: 0 0 2px; font-size: 0.95rem; }
+        .mod-sub { margin: 0; font-size: 0.75rem; color: var(--text-gray); }
+        .mod-actions { display: flex; gap: 8px; flex-shrink: 0; }
+        .icon-btn {
+            background: #2d333b; border: 1px solid #444; color: white;
+            width: 40px; height: 40px; border-radius: 10px;
+            display: flex; align-items: center; justify-content: center;
+            cursor: pointer; transition: 0.2s;
+        }
+        .icon-btn:hover { background: var(--primary-blue); color: #000; border-color: var(--primary-blue); }
+
+        .instructions-box { border-radius: 14px; padding: 16px; margin-top: 14px; }
+        .gd-modal .instructions-box { background: rgba(255,214,0,0.05); border: 1px solid rgba(255,214,0,0.15); }
+        .sub-modal .instructions-box { background: rgba(0,206,209,0.05); border: 1px solid rgba(0,206,209,0.15); }
+        .instructions-box h4 { margin: 0 0 12px; font-family: 'Orbitron', sans-serif; font-size: 0.8rem; letter-spacing: 1px; }
+        .gd-modal .instructions-box h4 { color: var(--gd-yellow); }
+        .sub-modal .instructions-box h4 { color: var(--sub-teal); }
+        .step { display: flex; gap: 12px; align-items: flex-start; margin-bottom: 10px; font-size: 0.88rem; line-height: 1.5; }
+        .step:last-child { margin-bottom: 0; }
+        .step-num { border-radius: 50%; width: 22px; height: 22px; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 0.75rem; flex-shrink: 0; margin-top: 1px; }
+        .gd-modal .step-num { background: rgba(255,214,0,0.15); color: var(--gd-yellow); }
+        .sub-modal .step-num { background: rgba(0,206,209,0.15); color: var(--sub-teal); }
+
+        /* ---- DOWNLOAD SECTION ---- */
+        .dl-section { margin-top: 24px; }
+
+        .main-dl-btn {
+            width: 100%; padding: 15px; border-radius: 13px; border: none;
+            color: white; font-weight: 700; cursor: pointer; font-size: 1rem;
+            font-family: 'Rajdhani', sans-serif; letter-spacing: 1px;
+            transition: opacity 0.2s, transform 0.1s;
+            display: flex; align-items: center; justify-content: center; gap: 8px;
+        }
+        .main-dl-btn:hover { opacity: 0.9; transform: scale(0.99); }
+        .main-dl-btn:active { transform: scale(0.97); }
+        .gd-dl { background: linear-gradient(135deg, var(--gd-orange), var(--gd-yellow)); color: #000; }
+        .sub-dl { background: linear-gradient(135deg, #005070, var(--sub-teal)); }
+
+        /* ---- CUSTOM DOWNLOAD BAR ---- */
+        .dl-bar-wrap {
+            display: none;
+            background: #111720;
+            border-radius: 16px;
+            border: 1px solid #2a2f38;
+            overflow: hidden;
+            margin-top: 10px;
+        }
+
+        .dl-bar-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px 0;
+        }
+        .dl-bar-filename {
+            font-size: 0.85rem; font-weight: 600; color: #ddd;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+            max-width: 280px;
+        }
+        .dl-bar-filename .filesize { font-size: 0.75rem; color: var(--text-gray); font-weight: 400; }
+        .dl-cancel {
+            background: none; border: none; color: var(--text-gray);
+            cursor: pointer; font-size: 18px; line-height: 1; padding: 0 2px;
+            transition: color 0.2s; flex-shrink: 0;
+        }
+        .dl-cancel:hover { color: var(--danger); }
+
+        .dl-track {
+            margin: 10px 16px 0;
+            height: 8px; border-radius: 99px;
+            background: #1e2531; overflow: hidden;
+        }
+        .dl-fill {
+            height: 100%; width: 0%; border-radius: 99px;
+            transition: width 0.3s linear;
+            position: relative; overflow: hidden;
+        }
+        .dl-fill::after {
+            content: '';
+            position: absolute; inset: 0;
+            background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.28) 50%, transparent 100%);
+            animation: shimmer 1.4s infinite;
+        }
+        @keyframes shimmer {
+            from { transform: translateX(-100%); }
+            to { transform: translateX(200%); }
+        }
+        .gd-modal .dl-fill { background: linear-gradient(90deg, var(--gd-orange), var(--gd-yellow)); }
+        .sub-modal .dl-fill { background: linear-gradient(90deg, #005070, var(--sub-teal)); }
+
+        .dl-stats {
+            display: flex; justify-content: space-between; align-items: center;
+            padding: 8px 16px 14px;
+            font-size: 0.8rem;
+        }
+        .dl-pct {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.1rem; font-weight: 700;
+        }
+        .gd-modal .dl-pct { color: var(--gd-yellow); }
+        .sub-modal .dl-pct { color: var(--sub-teal); }
+
+        .dl-meta { text-align: right; color: var(--text-gray); line-height: 1.5; }
+        .dl-meta strong { color: #ccc; }
+
+        .dl-done-row {
+            display: none;
+            align-items: center; justify-content: center; gap: 8px;
+            padding: 14px 16px;
+            color: var(--success);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 0.85rem; letter-spacing: 1px;
+        }
+
+        /* ---- WARNING POPUP ---- */
+        .warning-overlay {
+            display: none; position: fixed; inset: 0; z-index: 999;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(4px);
+            align-items: flex-start; justify-content: center; padding-top: 60px;
+        }
+        .warning-overlay.show { display: flex; }
+        .warning-popup {
+            background: #1a0000; border: 2px solid var(--danger);
+            border-radius: 20px; padding: 28px 32px;
+            max-width: 400px; width: 90%;
+            box-shadow: 0 0 0 1px rgba(255,58,58,0.1), 0 10px 40px rgba(255,58,58,0.35);
+            animation: warningPop 0.35s cubic-bezier(0.175,0.885,0.32,1.275);
+        }
+        @keyframes warningPop {
+            from { transform: scale(0.7) translateY(-20px); opacity: 0; }
+            to { transform: scale(1) translateY(0); opacity: 1; }
+        }
+        .warning-icon {
+            width: 54px; height: 54px;
+            background: rgba(255,58,58,0.15); border: 2px solid rgba(255,58,58,0.4);
+            border-radius: 50%; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 16px; animation: pulse-red 1.5s ease-in-out infinite;
+        }
+        @keyframes pulse-red {
+            0%,100% { box-shadow: 0 0 0 0 rgba(255,58,58,0.4); }
+            50% { box-shadow: 0 0 0 8px rgba(255,58,58,0); }
+        }
+        .warning-popup h3 { color: var(--danger); font-family: 'Orbitron', sans-serif; font-size: 1rem; letter-spacing: 1px; text-align: center; margin: 0 0 10px; }
+        .warning-popup p { color: #ffaaaa; font-size: 0.95rem; text-align: center; line-height: 1.6; margin: 0 0 20px; }
+        .warning-popup p strong { color: #fff; }
+        .warning-items { display: flex; flex-direction: column; gap: 10px; margin-bottom: 22px; }
+        .warning-item {
+            display: flex; align-items: center; gap: 12px;
+            background: rgba(255,58,58,0.08); border: 1px solid rgba(255,58,58,0.2);
+            border-radius: 12px; padding: 12px 15px;
+        }
+        .warning-item-icon { color: var(--danger); flex-shrink: 0; }
+        .warning-item span { font-size: 0.88rem; color: #ffcccc; line-height: 1.4; }
+        .warning-item span strong { color: white; }
+        .warning-ok-btn {
+            width: 100%; padding: 13px; border: none; background: var(--danger); color: white;
+            font-family: 'Orbitron', sans-serif; font-size: 0.85rem; letter-spacing: 1px;
+            border-radius: 12px; cursor: pointer; transition: background 0.2s;
+        }
+        .warning-ok-btn:hover { background: #ff5555; }
+
+        .modal-content::-webkit-scrollbar { width: 5px; }
+        .modal-content::-webkit-scrollbar-track { background: transparent; }
+        .modal-content::-webkit-scrollbar-thumb { background: #333; border-radius: 10px; }
+
+        /* ---- CONTACT SUPPORT LINK ---- */
+        a.support-link {
+            color: var(--danger);
+            text-decoration: underline;
+            font-style: italic;
+        }
+        a.support-link:hover {
+            color: #ff6666;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1><span>GAME</span>LAB</h1>
+    <p>Download &amp; Play · Free Forever</p>
+</header>
+
+<div class="container">
+
+    <!-- GEOMETRY DASH CARD -->
+    <div class="game-card gd-card" onclick="openModal('gd')">
+        <div class="gd-banner">
+            <!-- Orbiting sparkles -->
+            <div class="gd-orbit gd-orbit-1"><div class="gd-spark gd-spark-a"></div></div>
+            <div class="gd-orbit gd-orbit-2"><div class="gd-spark gd-spark-b"></div></div>
+            <div class="gd-orbit gd-orbit-3"><div class="gd-spark gd-spark-c"></div></div>
+
+            <div class="gd-logo-wrap">
+                <svg class="gd-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <defs>
+                        <linearGradient id="gdGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                            <stop offset="0%" stop-color="#FFD600"/>
+                            <stop offset="100%" stop-color="#FF6B00" stop-opacity="0"/>
+                        </linearGradient>
+                    </defs>
+                    <!-- Cube body -->
+                    <rect class="gd-body" x="10" y="10" width="80" height="80" rx="16" fill="#FF6B00"/>
+                    <rect x="10" y="10" width="80" height="80" rx="16" fill="url(#gdGrad)" opacity="0.8"/>
+                    <!-- Eye whites with CSS blink -->
+                    <ellipse class="gd-eye-white"   cx="36" cy="42" rx="8" ry="9" fill="white"/>
+                    <ellipse class="gd-eye-white gd-eye-white-r" cx="64" cy="42" rx="8" ry="9" fill="white"/>
+                    <!-- Pupils -->
+                    <ellipse cx="36" cy="43" rx="5" ry="6" fill="#1a0500"/>
+                    <ellipse cx="64" cy="43" rx="5" ry="6" fill="#1a0500"/>
+                    <!-- Shine dots -->
+                    <circle cx="38" cy="40" r="2" fill="white"/>
+                    <circle cx="66" cy="40" r="2" fill="white"/>
+                    <!-- Smile -->
+                    <path d="M 34 62 Q 50 75 66 62" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+                </svg>
+                <!-- Ground shadow -->
+                <div class="gd-shadow"></div>
+            </div>
+        </div>
+        <div class="card-content">
+            <span class="rating gd-rating">★★★★⯪ (4.6/5)</span>
+            <h3>Geometry Dash</h3>
+            <p>Action Platformer · 178 MB</p>
+            <button class="view-btn">View Game</button>
+        </div>
+    </div>
+
+    <!-- SUBNAUTICA CARD -->
+    <div class="game-card sub-card" onclick="openModal('sub')">
+        <div class="sub-banner">
+            <div class="bubble" style="width:8px;height:8px;left:15%;bottom:0;animation-duration:3.2s;animation-delay:0s;"></div>
+            <div class="bubble" style="width:5px;height:5px;left:30%;bottom:0;animation-duration:4s;animation-delay:0.8s;"></div>
+            <div class="bubble" style="width:12px;height:12px;left:55%;bottom:0;animation-duration:3.6s;animation-delay:0.3s;"></div>
+            <div class="bubble" style="width:6px;height:6px;left:72%;bottom:0;animation-duration:2.9s;animation-delay:1.2s;"></div>
+            <div class="bubble" style="width:9px;height:9px;left:85%;bottom:0;animation-duration:4.4s;animation-delay:0.6s;"></div>
+            <svg class="sub-logo" width="120" height="100" viewBox="0 0 120 100" xmlns="http://www.w3.org/2000/svg">
+                <defs>
+                    <linearGradient id="subGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+                        <stop offset="0%" stop-color="#00e8ff" stop-opacity="0.5"/>
+                        <stop offset="100%" stop-color="#003040" stop-opacity="0.8"/>
+                    </linearGradient>
+                </defs>
+                <ellipse cx="60" cy="60" rx="48" ry="22" fill="#00a8b5" opacity="0.9"/>
+                <ellipse cx="60" cy="60" rx="48" ry="22" fill="url(#subGrad)"/>
+                <rect x="52" y="40" width="20" height="22" rx="6" fill="#005060"/>
+                <rect x="56" y="33" width="12" height="10" rx="4" fill="#006070"/>
+                <rect x="62" y="22" width="3" height="12" rx="1" fill="#004050"/>
+                <rect x="58" y="21" width="11" height="3" rx="1" fill="#004050"/>
+                <circle cx="35" cy="60" r="6" fill="#001020" stroke="#00d4e8" stroke-width="1.5"/>
+                <circle cx="55" cy="60" r="6" fill="#001020" stroke="#00d4e8" stroke-width="1.5"/>
+                <circle cx="75" cy="60" r="6" fill="#001020" stroke="#00d4e8" stroke-width="1.5"/>
+                <circle cx="35" cy="60" r="3.5" fill="#00ffee" opacity="0.6"/>
+                <circle cx="55" cy="60" r="3.5" fill="#00ffee" opacity="0.5"/>
+                <circle cx="75" cy="60" r="3.5" fill="#00ffee" opacity="0.4"/>
+                <ellipse cx="108" cy="60" rx="4" ry="10" fill="#004050" opacity="0.8"/>
+                <text x="60" y="26" font-family="Orbitron,sans-serif" font-size="11" font-weight="900" fill="#00e8ff" text-anchor="middle" letter-spacing="3" opacity="0.9">SUBNAUTICA</text>
+            </svg>
+        </div>
+        <div class="card-content">
+            <span class="rating sub-rating">★★★★⯪ (4.5/5)</span>
+            <h3>Subnautica</h3>
+            <p>Survival · Open World · 9.7 GB</p>
+            <button class="view-btn">View Game</button>
+        </div>
+    </div>
+
+</div>
+
+<!-- ====== GD MODAL ====== -->
+<div id="gdModal" class="modal">
+    <div class="modal-content gd-modal">
+        <span class="close" onclick="closeModal('gd')">&times;</span>
+        <div class="popup-header">
+            <div class="mini-icon gd">
+                <svg width="28" height="28" viewBox="0 0 100 100">
+                    <rect x="8" y="8" width="84" height="84" rx="16" fill="#FF6B00"/>
+                    <ellipse cx="36" cy="42" rx="8" ry="9" fill="white"/>
+                    <ellipse cx="64" cy="42" rx="8" ry="9" fill="white"/>
+                    <ellipse cx="36" cy="43" rx="5" ry="6" fill="#1a0500"/>
+                    <ellipse cx="64" cy="43" rx="5" ry="6" fill="#1a0500"/>
+                    <circle cx="38" cy="40" r="2" fill="white"/>
+                    <circle cx="66" cy="40" r="2" fill="white"/>
+                    <path d="M 34 62 Q 50 75 66 62" stroke="white" stroke-width="4" fill="none" stroke-linecap="round"/>
+                </svg>
+            </div>
+            <div>
+                <h2>Geometry Dash</h2>
+                <span>Timing Game · Action Platformer</span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-link active" onclick="switchTab(event,'gdStats','gd')">Stats</button>
+            <button class="tab-link" onclick="switchTab(event,'gdMods','gd')">Mods</button>
+        </div>
+
+        <div id="gdStats" class="tab-content" style="display:block">
+            <div class="stats-grid">
+                <div><span>Developer</span>RobTop Games</div>
+                <div><span>Rating</span><b style="color:var(--gd-yellow)">10 / 10</b></div>
+                <div><span>Version</span>2.206 (Latest)</div>
+                <div><span>File</span>Geometry.Dash.zip</div>
+                <div><span>Size</span>178 MB</div>
+                <div><span>Genre</span>Platformer</div>
+            </div>
+        </div>
+
+        <div id="gdMods" class="tab-content">
+            <div class="mod-container">
+                <div>
+                    <p class="mod-title">Geode</p>
+                    <p class="mod-sub">Official Mod Loader · geode-sdk.org</p>
+                </div>
+                <div class="mod-actions">
+                    <button class="icon-btn" onclick="window.open('https://geode-sdk.org/')" title="Visit website">
+                        <i data-lucide="globe" width="18" height="18"></i>
+                    </button>
+                    <button class="icon-btn" onclick="startDownload('GeodeInstaller.exe','gd','geode-bar')" title="Download Geode">
+                        <i data-lucide="download" width="18" height="18"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Geode inline download bar -->
+            <div id="geode-bar" class="dl-bar-wrap">
+                <div class="dl-bar-header">
+                    <div class="dl-bar-filename">GeodeInstaller.exe <span class="filesize" id="geode-bar-size"></span></div>
+                    <button class="dl-cancel" onclick="cancelDownload('geode-bar', null)" title="Cancel">✕</button>
+                </div>
+                <div class="dl-track"><div id="geode-bar-fill" class="dl-fill"></div></div>
+                <div class="dl-stats">
+                    <span class="dl-pct" id="geode-bar-pct">0%</span>
+                    <div class="dl-meta" id="geode-bar-meta">Connecting…</div>
+                </div>
+                <div class="dl-done-row" id="geode-bar-done">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    DOWNLOAD COMPLETE
+                </div>
+            </div>
+
+            <div class="mod-container" style="margin-top:10px">
+                <div>
+                    <p class="mod-title">Mega Hack v7</p>
+                    <p class="mod-sub">Popular Hack Client · Must Purchase from Absolute</p>
+                </div>
+                <div class="mod-actions">
+                    <button class="icon-btn" onclick="window.open('https://absolllute.com/store/view_hack')" title="Buy Mega Hack">
+                        <i data-lucide="shopping-cart" width="18" height="18"></i>
+                    </button>
+                </div>
+            </div>
+
+            <div class="instructions-box">
+                <h4>📦 How to Install Geode Mods</h4>
+                <div class="step"><div class="step-num">1</div><span>Download <strong>GeodeInstaller.exe</strong> using the button above and run it.</span></div>
+                <div class="step"><div class="step-num">2</div><span>Point the installer to your <strong>Geometry Dash</strong> folder (Steam or standalone).</span></div>
+                <div class="step"><div class="step-num">3</div><span>Launch GD — the <strong>Geode button</strong> appears on the main menu.</span></div>
+                <div class="step"><div class="step-num">4</div><span>Browse the in-game <strong>mod index</strong> and install mods with one click.</span></div>
+                <div class="step"><div class="step-num">5</div><span>For <strong>Mega Hack v7</strong>, purchase from absolllute.com, run its installer, and point it at your GD folder.</span></div>
+            </div>
+        </div>
+
+        <div class="dl-section">
+            <button id="gd-game-btn" class="main-dl-btn gd-dl" onclick="startDownload('Geometry.Dash.zip','gd','gd-game-bar', 'gd-game-btn')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Game (.zip) · 178 MB
+            </button>
+            <div id="gd-game-bar" class="dl-bar-wrap">
+                <div class="dl-bar-header">
+                    <div class="dl-bar-filename">Geometry.Dash.zip <span class="filesize" id="gd-game-bar-size"></span></div>
+                    <button class="dl-cancel" onclick="cancelDownload('gd-game-bar','gd-game-btn')" title="Cancel">✕</button>
+                </div>
+                <div class="dl-track"><div id="gd-game-bar-fill" class="dl-fill"></div></div>
+                <div class="dl-stats">
+                    <span class="dl-pct" id="gd-game-bar-pct">0%</span>
+                    <div class="dl-meta" id="gd-game-bar-meta">Connecting…</div>
+                </div>
+                <div class="dl-done-row" id="gd-game-bar-done">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    DOWNLOAD COMPLETE
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== SUBNAUTICA MODAL ====== -->
+<div id="subModal" class="modal">
+    <div class="modal-content sub-modal">
+        <span class="close" onclick="closeModal('sub')">&times;</span>
+        <div class="popup-header">
+            <div class="mini-icon sub">
+                <svg width="28" height="28" viewBox="0 0 100 100">
+                    <ellipse cx="50" cy="58" rx="42" ry="20" fill="#00a8b5"/>
+                    <rect x="42" y="40" width="18" height="20" rx="5" fill="#005060"/>
+                    <rect x="46" y="33" width="10" height="9" rx="3" fill="#006070"/>
+                    <circle cx="30" cy="58" r="5" fill="#001020" stroke="#00d4e8" stroke-width="1.5"/>
+                    <circle cx="50" cy="58" r="5" fill="#001020" stroke="#00d4e8" stroke-width="1.5"/>
+                    <circle cx="70" cy="58" r="5" fill="#001020" stroke="#00d4e8" stroke-width="1.5"/>
+                    <circle cx="30" cy="58" r="3" fill="#00ffee" opacity="0.7"/>
+                    <circle cx="50" cy="58" r="3" fill="#00ffee" opacity="0.6"/>
+                    <circle cx="70" cy="58" r="3" fill="#00ffee" opacity="0.5"/>
+                </svg>
+            </div>
+            <div>
+                <h2>Subnautica</h2>
+                <span>Survival · Underwater Open World</span>
+            </div>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-link active" onclick="switchTab(event,'subStats','sub')">Stats</button>
+            <button class="tab-link" onclick="switchTab(event,'subMods','sub')">Mods</button>
+        </div>
+
+        <div id="subStats" class="tab-content" style="display:block">
+            <div class="stats-grid">
+                <div><span>Developer</span>Unknown Worlds</div>
+                <div><span>Rating</span><b style="color:var(--sub-teal)">9.5 / 10</b></div>
+                <div><span>Version</span>v68611 (Latest)</div>
+                <div><span>File</span>Subnautica.zip</div>
+                <div><span>Size</span>9.7 GB</div>
+                <div><span>Genre</span>Survival / Exploration</div>
+            </div>
+        </div>
+
+        <div id="subMods" class="tab-content">
+            <div class="mod-container">
+                <div>
+                    <p class="mod-title">Nexus Mods</p>
+                    <p class="mod-sub">Largest Subnautica Mod Hub</p>
+                </div>
+                <div class="mod-actions">
+                    <button class="icon-btn" onclick="window.open('https://www.nexusmods.com/subnautica')" title="Browse Nexus">
+                        <i data-lucide="external-link" width="18" height="18"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="mod-container">
+                <div>
+                    <p class="mod-title">Nautilus API</p>
+                    <p class="mod-sub">Required Mod Framework</p>
+                </div>
+                <div class="mod-actions">
+                    <button class="icon-btn" onclick="window.open('https://www.nexusmods.com/subnautica/mods/1262')" title="View on Nexus">
+                        <i data-lucide="globe" width="18" height="18"></i>
+                    </button>
+                </div>
+            </div>
+            <div class="instructions-box">
+                <h4>🌊 How to Install Subnautica Mods</h4>
+                <div class="step"><div class="step-num">1</div><span>Install <strong>Vortex Mod Manager</strong> from Nexus Mods for automatic mod management.</span></div>
+                <div class="step"><div class="step-num">2</div><span>Drop <strong>BepInEx</strong> into your Subnautica root folder — it's the required mod loader.</span></div>
+                <div class="step"><div class="step-num">3</div><span>Place the <strong>Nautilus API</strong> <code>.dll</code> in <code>BepInEx/plugins/</code>.</span></div>
+                <div class="step"><div class="step-num">4</div><span>Download any other mods from Nexus and put their <code>.dll</code> files in <code>BepInEx/plugins/</code>.</span></div>
+                <div class="step"><div class="step-num">5</div><span>Launch Subnautica normally — mods load automatically on startup.</span></div>
+            </div>
+        </div>
+
+        <div class="dl-section">
+            <button id="sub-game-btn" class="main-dl-btn sub-dl" onclick="startDownload('Subnautica.zip','sub','sub-game-bar','sub-game-btn')">
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                Download Game (.zip) · 9.7 GB
+            </button>
+            <div id="sub-game-bar" class="dl-bar-wrap">
+                <div class="dl-bar-header">
+                    <div class="dl-bar-filename">Subnautica.zip <span class="filesize" id="sub-game-bar-size"></span></div>
+                    <button class="dl-cancel" onclick="cancelDownload('sub-game-bar','sub-game-btn')" title="Cancel">✕</button>
+                </div>
+                <div class="dl-track"><div id="sub-game-bar-fill" class="dl-fill"></div></div>
+                <div class="dl-stats">
+                    <span class="dl-pct" id="sub-game-bar-pct">0%</span>
+                    <div class="dl-meta" id="sub-game-bar-meta">Connecting…</div>
+                </div>
+                <div class="dl-done-row" id="sub-game-bar-done">
+                    <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    DOWNLOAD COMPLETE
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- ====== WARNING POPUP ====== -->
+<div id="warningOverlay" class="warning-overlay">
+    <div class="warning-popup">
+        <div class="warning-icon">
+            <svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#ff3a3a" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 0 0 1.71 3h16.94a2 2 0 0 0 1.71-3L13.71 3.86a2 2 0 0 0-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+        </div>
+        <h3>⚠ DOWNLOAD IN PROGRESS</h3>
+        <p>Your download has started! Please note the following to ensure it <strong>completes successfully</strong>:</p>
+        <div class="warning-items">
+            <div class="warning-item">
+                <div class="warning-item-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><polyline points="8 21 12 17 16 21"/></svg>
+                </div>
+                <span><strong>Keep this tab open</strong> — closing it will cancel the download.</span>
+            </div>
+            <div class="warning-item">
+                <div class="warning-item-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18.36 6.64a9 9 0 1 1-12.73 0"/><line x1="12" y1="2" x2="12" y2="12"/></svg>
+                </div>
+                <span><strong>Do not turn off</strong> your computer or let it sleep.</span>
+            </div>
+            <div class="warning-item">
+                <div class="warning-item-icon">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M1 6s4-2 11-2 11 2 11 2v12s-4 2-11 2S1 18 1 18V6z"/><line x1="1" y1="12" x2="23" y2="12"/></svg>
+                </div>
+                <span><strong>Stay connected</strong> — losing internet will interrupt the download.</span>
+            </div>
+        </div>
+        <button class="warning-ok-btn" onclick="dismissWarning()">GOT IT — CONTINUE DOWNLOAD</button>
+    </div>
+</div>
+
+<script>
+lucide.createIcons();
+
+// ── Config ──────────────────────────────────────────────
+// Dynamically uses whatever host the site is served from,
+// so downloads work both locally and when published.
+const BASE_URL = window.location.origin + '/';
+
+const controllers = {};   // barId → AbortController
+
+// ── Modal helpers ────────────────────────────────────────
+function openModal(game)  { document.getElementById(game + 'Modal').style.display = 'block'; }
+function closeModal(game) { document.getElementById(game + 'Modal').style.display = 'none'; }
+
+window.onclick = e => {
+    ['gd','sub'].forEach(g => {
+        if (e.target === document.getElementById(g + 'Modal')) closeModal(g);
+    });
+};
+
+function switchTab(evt, tabId, game) {
+    const modal = document.getElementById(game + 'Modal');
+    modal.querySelectorAll('.tab-content').forEach(t => t.style.display = 'none');
+    modal.querySelectorAll('.tab-link').forEach(t => t.classList.remove('active'));
+    document.getElementById(tabId).style.display = 'block';
+    evt.currentTarget.classList.add('active');
+}
+
+// ── Formatting ───────────────────────────────────────────
+function fmtBytes(b) {
+    if (b < 1024)        return b + ' B';
+    if (b < 1024 ** 2)   return (b / 1024).toFixed(1) + ' KB';
+    if (b < 1024 ** 3)   return (b / 1024 ** 2).toFixed(1) + ' MB';
+    return (b / 1024 ** 3).toFixed(2) + ' GB';
+}
+function fmtSpeed(bps) {
+    if (bps < 1024 ** 2) return (bps / 1024).toFixed(0) + ' KB/s';
+    return (bps / 1024 ** 2).toFixed(1) + ' MB/s';
+}
+function fmtTime(s) {
+    if (s < 60)  return s.toFixed(0) + 's left';
+    if (s < 3600) return (s / 60).toFixed(1) + 'm left';
+    return (s / 3600).toFixed(1) + 'h left';
+}
+
+// ── Bar DOM helpers ──────────────────────────────────────
+function barEl(id, suffix) { return document.getElementById(id + suffix); }
+
+function showBar(barId) {
+    const bar = document.getElementById(barId);
+    bar.style.display = 'block';
+    barEl(barId, '-fill').style.width = '0%';
+    barEl(barId, '-pct').textContent  = '0%';
+    barEl(barId, '-meta').textContent = 'Connecting…';
+    barEl(barId, '-done').style.display = 'none';
+    bar.querySelector('.dl-stats').style.display       = '';
+    bar.querySelector('.dl-bar-header').style.display  = '';
+    bar.querySelector('.dl-track').style.display       = '';
+}
+
+function setProgress(barId, pct, speed, received, total) {
+    barEl(barId, '-fill').style.width   = pct.toFixed(1) + '%';
+    barEl(barId, '-pct').textContent    = pct.toFixed(0) + '%';
+    let meta = fmtSpeed(speed);
+    if (total) meta += ' · ' + fmtBytes(received) + ' / ' + fmtBytes(total);
+    const remaining = total && speed > 0 ? (total - received) / speed : 0;
+    if (remaining > 0) meta += '<br><strong>' + fmtTime(remaining) + '</strong>';
+    barEl(barId, '-meta').innerHTML = meta;
+}
+
+function markDone(barId, received) {
+    barEl(barId, '-fill').style.width  = '100%';
+    barEl(barId, '-pct').textContent   = '100%';
+    barEl(barId, '-meta').textContent  = fmtBytes(received) + ' · Done';
+    setTimeout(() => {
+        const bar = document.getElementById(barId);
+        bar.querySelector('.dl-stats').style.display      = 'none';
+        bar.querySelector('.dl-bar-header').style.display = 'none';
+        bar.querySelector('.dl-track').style.display      = 'none';
+        barEl(barId, '-done').style.display = 'flex';
+    }, 600);
+}
+
+// ── Main download function ───────────────────────────────
+async function startDownload(filename, game, barId, btnId) {
+    // Show red warning popup
+    document.getElementById('warningOverlay').classList.add('show');
+
+    // Hide the trigger button (if one given)
+    if (btnId) document.getElementById(btnId).style.display = 'none';
+
+    // Set filename display + show bar
+    const sizeEl = barEl(barId, '-size');
+    if (sizeEl) sizeEl.textContent = '';
+    showBar(barId);
+
+    // Abort any previous download on this bar
+    if (controllers[barId]) controllers[barId].abort();
+    const ctrl = new AbortController();
+    controllers[barId] = ctrl;
+
+    try {
+        const res = await fetch(BASE_URL + filename, { signal: ctrl.signal });
+        if (!res.ok) throw new Error('Server returned ' + res.status);
+
+        const total = parseInt(res.headers.get('Content-Length') || '0');
+        if (sizeEl && total) sizeEl.textContent = '· ' + fmtBytes(total);
+
+        const reader   = res.body.getReader();
+        const chunks   = [];
+        let received   = 0;
+        let lastTime   = performance.now();
+        let lastBytes  = 0;
+
+        while (true) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            chunks.push(value);
+            received += value.byteLength;
+
+            const now     = performance.now();
+            const elapsed = (now - lastTime) / 1000;
+            if (elapsed >= 0.35) {
+                const speed = (received - lastBytes) / elapsed;
+                const pct   = total ? (received / total * 100) : 0;
+                setProgress(barId, pct, speed, received, total);
+                lastTime  = now;
+                lastBytes = received;
+            }
+        }
+
+        // Trigger browser "Save As" dialog
+        const blob = new Blob(chunks);
+        const url  = URL.createObjectURL(blob);
+        const a    = Object.assign(document.createElement('a'), { href: url, download: filename });
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+
+        markDone(barId, received);
+
+    } catch (err) {
+        if (err.name === 'AbortError') {
+            resetBar(barId, btnId);
+        } else {
+            barEl(barId, '-pct').textContent  = 'ERR';
+            barEl(barId, '-meta').innerHTML   =
+                '<span style="color:var(--danger)">Cannot reach file — Please try again later — <a class="support-link" href="mailto:j0sephwilon8063@gmail.com">Contact support</a></span>';
+            console.error(err);
+        }
+    }
+}
+
+function cancelDownload(barId, btnId) {
+    if (controllers[barId]) { controllers[barId].abort(); delete controllers[barId]; }
+    resetBar(barId, btnId);
+}
+
+function resetBar(barId, btnId) {
+    const bar = document.getElementById(barId);
+    bar.style.display = 'none';
+    barEl(barId, '-fill').style.width  = '0%';
+    barEl(barId, '-pct').textContent   = '0%';
+    barEl(barId, '-meta').textContent  = 'Connecting…';
+    barEl(barId, '-done').style.display = 'none';
+    bar.querySelector('.dl-stats').style.display       = '';
+    bar.querySelector('.dl-bar-header').style.display  = '';
+    bar.querySelector('.dl-track').style.display       = '';
+    if (btnId) document.getElementById(btnId).style.display = '';
+}
+
+function dismissWarning() {
+    document.getElementById('warningOverlay').classList.remove('show');
+}
+</script>
+</body>
+</html>
